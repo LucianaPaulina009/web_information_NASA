@@ -184,7 +184,7 @@ function CameraJourney({ scene, onArrive, bodies }: { scene: number; onArrive: (
   const arrivedScene = useRef(0);
 
   const resolveDestination = useCallback(() => {
-    if (scene === 0) {
+    if (scene === 0 || scene === 6) {
       targetPosition.current.set(...OVERVIEW_POSITION);
       targetFocus.current.set(...OVERVIEW_FOCUS);
       return;
@@ -218,7 +218,7 @@ function CameraJourney({ scene, onArrive, bodies }: { scene: number; onArrive: (
     startPosition.current.copy(perspectiveCamera.position);
     startFocus.current.copy(currentFocus.current);
     startFov.current = perspectiveCamera.fov;
-    targetFov.current = scene === 0 || scene === 3
+    targetFov.current = scene === 0 || scene === 3 || scene === 6
       ? 45
       : MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(20)) / zoom));
     resolveDestination();
@@ -237,7 +237,7 @@ function CameraJourney({ scene, onArrive, bodies }: { scene: number; onArrive: (
   useFrame(({ camera }, frameDelta) => {
     const delta = Math.min(frameDelta, 0.05);
     const perspectiveCamera = camera as PerspectiveCamera;
-    if (scene === 0 && progress.current >= 1) return;
+    if ((scene === 0 || scene === 6) && progress.current >= 1) return;
     resolveDestination();
     if (progress.current >= 1) {
       const tracking = 1 - Math.exp(-delta * 3.2);
