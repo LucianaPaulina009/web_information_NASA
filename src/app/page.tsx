@@ -501,9 +501,10 @@ export default function Home() {
           <Image
             src="/marsa.png"
             alt="MARSA"
-            width={108}
+            width={142}
             height={36}
             priority
+            unoptimized
             className="brand-logo"
           />
         </button>
