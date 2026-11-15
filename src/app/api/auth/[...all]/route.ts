@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth"; // path to your auth file
-import { toNextJsHandler } from "better-auth/next-js";
+function authenticationDisabled() {
+  return Response.json({ error: "Not Found" }, { status: 404 });
+}
 
-export const { POST, GET } = toNextJsHandler(auth);
+export { authenticationDisabled as GET, authenticationDisabled as POST };
