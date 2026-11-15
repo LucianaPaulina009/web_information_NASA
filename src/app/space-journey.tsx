@@ -11,7 +11,7 @@ const OVERVIEW_FOCUS: Point = [1.2, 0, 0];
 const CAMERA_OPTIONS = { position: OVERVIEW_POSITION, fov: 45, near: 0.03, far: 150 };
 const EARTH_FALLBACK: Point = [7, 0, 0];
 const MARS_FALLBACK: Point = [11, 0.1, 0];
-const MOON_FALLBACK: Point = [7.82, 0.08, 0.12];
+const MOON_FALLBACK: Point = [7.88, 0.08, 0.12];
 
 type BodyRefs = {
   earth: RefObject<Group | null>;
@@ -107,17 +107,16 @@ function SolidPlanet({ position, radius, color }: { position: Point; radius: num
 }
 
 function MoonPlanet() {
-  const spin = useRef<Group>(null);
+  const mesh = useRef<Mesh>(null);
+  const map = useLoader(TextureLoader, "/textures/moon.jpg");
   useFrame((_, delta) => {
-    if (spin.current) spin.current.rotation.y += Math.min(delta, 0.05) * 0.16;
+    if (mesh.current) mesh.current.rotation.y += Math.min(delta, 0.05) * 0.1;
   });
   return (
-    <group ref={spin}>
-      <mesh><sphereGeometry args={[0.105, 24, 24]} /><meshStandardMaterial color="#aaa9a4" roughness={0.96} /></mesh>
-      <mesh position={[0.035, 0.03, 0.094]}><circleGeometry args={[0.018, 16]} /><meshBasicMaterial color="#777875" /></mesh>
-      <mesh position={[-0.04, -0.018, 0.094]}><circleGeometry args={[0.013, 16]} /><meshBasicMaterial color="#72736f" /></mesh>
-      <mesh position={[0.006, -0.05, 0.091]}><circleGeometry args={[0.01, 16]} /><meshBasicMaterial color="#777875" /></mesh>
-    </group>
+    <mesh ref={mesh} rotation={[0.08, 0, 0.03]}>
+      <sphereGeometry args={[0.135, 64, 64]} />
+      <meshStandardMaterial map={map} roughness={0.92} metalness={0.02} />
+    </mesh>
   );
 }
 
@@ -143,7 +142,7 @@ function SolarSystem({ bodies }: { bodies: BodyRefs }) {
       <OrbitingBody radius={4.3} height={0.04} angle={2.2} speed={0.082}><SolidPlanet position={[0, 0, 0]} radius={0.31} color="#d6aa70" /></OrbitingBody>
       <OrbitingBody radius={7} angle={0.12} speed={0.055} bodyRef={bodies.earth}>
         <TexturedPlanet position={[0, 0, 0]} radius={0.38} texture="/textures/earth.jpg" speed={0.1} tilt={0.2} />
-        <OrbitingBody radius={0.82} height={0.08} angle={0.8} speed={0.16} bodyRef={bodies.moon}><MoonPlanet /></OrbitingBody>
+        <OrbitingBody radius={0.88} height={0.08} angle={0.8} speed={0.16} bodyRef={bodies.moon}><MoonPlanet /></OrbitingBody>
       </OrbitingBody>
       <OrbitingBody radius={11} height={0.1} angle={-0.18} speed={0.043} bodyRef={bodies.mars}><TexturedPlanet position={[0, 0, 0]} radius={0.32} texture="/textures/mars.jpg" speed={0.075} tilt={0.1} /></OrbitingBody>
       <OrbitingBody radius={15.4} height={0.1} angle={1.42} speed={0.022}><SolidPlanet position={[0, 0, 0]} radius={0.82} color="#c89f79" /></OrbitingBody>
@@ -203,12 +202,12 @@ function CameraJourney({ scene, onArrive, bodies }: { scene: number; onArrive: (
     const reference = isEarth ? bodies.earth : isMoon ? bodies.moon : bodies.mars;
     const fallback = isEarth ? EARTH_FALLBACK : isMoon ? MOON_FALLBACK : MARS_FALLBACK;
     readWorldPosition(reference, fallback, anchor.current);
-    const distance = isMoon ? 0.85 : isEarth ? 2.35 : 2.7;
-    const height = isMoon ? 0.2 : 0.48;
-    targetPosition.current.copy(anchor.current).add(cameraOffset.current.set(0.08, height, distance));
+    const distance = isMoon ? 0.48 : isEarth ? 2.35 : 2.7;
+    const height = isMoon ? 0.06 : 0.48;
+    targetPosition.current.copy(anchor.current).add(cameraOffset.current.set(isMoon ? 0.04 : 0.08, height, distance));
     viewDirection.current.copy(anchor.current).sub(targetPosition.current).normalize();
     cameraRight.current.crossVectors(viewDirection.current, worldUp.current).normalize();
-    const desktopOffset = isMoon ? 0.1 : isEarth ? 0.35 : 0.42;
+    const desktopOffset = isMoon ? 0.15 : isEarth ? 0.35 : 0.42;
     const composition = desktopOffset * (viewportWidth < 900 ? 0.48 : 1) / zoom;
     const direction = isEarth ? 1 : -1;
     targetFocus.current.copy(anchor.current).addScaledVector(cameraRight.current, composition * direction);
@@ -273,7 +272,8 @@ function JourneyScene({ scene, travelling, onArrive }: { scene: number; travelli
     <>
       <color attach="background" args={["#01030a"]} />
       <fog attach="fog" args={["#01030a", 22, 82]} />
-      <ambientLight intensity={0.09} />
+      <ambientLight intensity={0.16} />
+      <directionalLight position={[6, 2, 8]} intensity={0.22} color="#b4c9e8" />
       <Stars travelling={travelling} />
       <SolarSystem bodies={bodies} />
       <CameraJourney scene={scene} onArrive={onArrive} bodies={bodies} />
